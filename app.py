@@ -1,6 +1,16 @@
+import pandas as pd
 import scipy.stats
 import streamlit as st
 import time
+
+#Estas son variables de estado que se conservan cuando Streamlit vuelve a ejecutar el script
+if "experiment_no" not in st.session_state:
+    st.session_state["experiment_no"] = 0
+
+if "df_experiment_result" not in st.session_state:
+    st.session_state["df_experiment_result"] = pd.DataFrame(columns=["no", "iteraciones", "media"])
+    
+
 
 st.header("Lanzar una moneda")
 
