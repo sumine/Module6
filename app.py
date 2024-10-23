@@ -49,4 +49,4 @@ if start_button:
     ], axis=0)
     st.session_state["df_experiment_result"] = st.session_state["df_experiment_result"].reset_index(drop=True)
 
-st.write(st.session["df_experiment_result"])
+st.write(st.session_state["df_experiment_result"])
