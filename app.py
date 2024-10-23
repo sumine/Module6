@@ -45,7 +45,7 @@ if start_button:
         pd.DataFrame(data=[[st.session_state["experiment_no"],
                             number_of_trials,
                             mean]],
-                            columns=["no", "iteration", "mean"])
+                            columns=["no", "iteraciones", "media"])
     ], axis=0)
     st.session_state["df_experiment_result"] = st.session_state["df_experiment_result"].reset_index(drop=True)
 
