@@ -1,52 +1,43 @@
 import pandas as pd
-import scipy.stats
 import streamlit as st
-import time
+import plotly_express as px
 
-#Estas son variables de estado que se conservan cuando Streamlit vuelve a ejecutar el script
-if "experiment_no" not in st.session_state:
-    st.session_state["experiment_no"] = 0
 
-if "df_experiment_result" not in st.session_state:
-    st.session_state["df_experiment_result"] = pd.DataFrame(columns=["no", "iteraciones", "media"])
+st.title("Module 6 Project")
 
-st.header("Lanzar una moneda")
+# Leer el csv con la base de datos
+car_data = pd.read_csv("vehicles_us.csv")
 
-chart = st.line_chart([0.5])
+#Muestra el dataframe. El checkbox filtra el dataframe por los carros listados 
+#durante más de 100 días.
+st.header("Vehicles Dataframe")
+automatic = st.checkbox("Show only those listed for more than 100 days")
+if automatic:
+  st.dataframe(car_data[car_data["days_listed"] > 100])
+else:
+  st.dataframe(car_data)
 
-#función que emula el lanzamiento de una moneda
-def toss_coin(n): 
-#The bernoulli distribution has only 2 outcomes 1(success) and 0(failure) probability of success p
-    trial_outcomes = scipy.stats.bernoulli.rvs(p=0.5, size=n) 
+#Gráfica de dispersión que solo se muestra si se selecciona el checkbox
+st.header("Scatter plot odometer vs price")
+odometer_graph = st.checkbox("Make a scatter plot")
+if odometer_graph:
+  st.write("We are making a scatter plot!")
+  fig = px.scatter(car_data, x="odometer", y="price",
+                   labels=dict(odometer="Odometer", price="Price ($)"))
+  st.plotly_chart(fig)
 
-    mean = None
-    outcome_no = 0
-    outcome_1_count = 0
+#Histograma que compara el precio de dos modelos. Los modelos se seleccionan.
+st.header("Comparison of price between two models")
+model_1 = st.selectbox("Select the first model",
+                       (car_data["model"].unique()))
+model_2 = st.selectbox("Select the second model",
+                       (car_data["model"].unique()),index=3)
+fig = px.histogram(car_data[(car_data["model"] == model_1) | (car_data["model"] == model_2)],
+                   x="price", color="model", labels=dict(price="Price ($)", model="Model"))
+st.plotly_chart(fig)
 
-    for r in trial_outcomes:
-        outcome_no += 1
-        if r == 1:
-            outcome_1_count += 1
-        mean = outcome_1_count / outcome_no
-        chart.add_rows([mean])
-        time.sleep(0.05)
+st.header("Histogram of condition vs model year")
+fig = px.histogram(car_data, x="model_year", color="condition",
+                   labels=dict(model_year="Model year", condition="Condition"))
+st.plotly_chart(fig)
 
-    return mean
-
-number_of_trials = st.slider("¿Número de intentos?", 1, 1000, 10)
-start_button = st.button("Ejecutar")
-
-if start_button:
-    st.write(f"Experimento con {number_of_trials} intentos en curso.")
-    st.session_state["experiment_no"] += 1
-    mean = toss_coin(number_of_trials)
-    st.session_state["df_experiment_result"] = pd.concat([
-        st.session_state["df_experiment_result"],
-        pd.DataFrame(data=[[st.session_state["experiment_no"],
-                            number_of_trials,
-                            mean]],
-                            columns=["no", "iteraciones", "media"])
-    ], axis=0)
-    st.session_state["df_experiment_result"] = st.session_state["df_experiment_result"].reset_index(drop=True)
-
-st.write(st.session_state["df_experiment_result"])
